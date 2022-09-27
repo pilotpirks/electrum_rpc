@@ -1170,29 +1170,26 @@ func (c *Client) Version() (version string, err error) {
 }
 
 /*
-<command>
-    gui                 Run GUI (default)
-    daemon              Run Daemon
     add_lightning_request
     add_peer
     add_request         Create a payment request, using the first unused address of the wallet
-    addtransaction      Add a transaction to the wallet history
-    broadcast           Broadcast a transaction to the network
-	bumpfee				Bump the Fee for an unconfirmed Transaction
+    + addtransaction      Add a transaction to the wallet history
+    + broadcast           Broadcast a transaction to the network
+	+ bumpfee				Bump the Fee for an unconfirmed Transaction
     changegaplimit      Change the gap limit of the wallet
     clear_invoices      Remove all invoices
     clear_ln_blacklist
     clear_requests      Remove all payment requests
     close_channel
-    close_wallet        Close wallet
+    + close_wallet        Close wallet
     commands            List of commands
     convert_xkey        Convert xtype of a master key
-    create              Create a new wallet
-    createmultisig      Create multisig address
-    createnewaddress    Create a new receiving address, beyond the gap limit of the wallet
+    + create              Create a new wallet
+    + createmultisig      Create multisig address
+    + createnewaddress    Create a new receiving address, beyond the gap limit of the wallet
     decode_invoice
     decrypt             Decrypt a message encrypted with a public key
-    deserialize         Deserialize a serialized transaction
+    + deserialize         Deserialize a serialized transaction
     dumpgraph
     dumpprivkeys        Deprecated
     enable_htlc_settle
@@ -1205,52 +1202,52 @@ func (c *Client) Version() (version string, err error) {
     get_ssl_domain      Check and return the SSL domain set in ssl_keyfile and ssl_certfile
     get_tx_status       Returns some information regarding the tx
     get_watchtower_ctn  return the local watchtower's ctn of channel
-    getaddressbalance   Return the balance of any address
-    getaddresshistory   Return the transaction history of any address
-    getaddressunspent   Returns the UTXO list of any address
+    + getaddressbalance   Return the balance of any address
+    + getaddresshistory   Return the transaction history of any address
+    + getaddressunspent   Returns the UTXO list of any address
     getalias            Retrieve alias
-    getbalance          Return the balance of your wallet
-    getconfig           Return a configuration variable
-    getfeerate          Return current suggested fee rate (in sat/kvByte), according to config settings or supplied parameters
-    getinfo             network info
-    getmasterprivate    Get master private key
-    getmerkle           Get Merkle branch of a transaction included in a block
+    + getbalance          Return the balance of your wallet
+    + getconfig           Return a configuration variable
+    + getfeerate          Return current suggested fee rate (in sat/kvByte), according to config settings or supplied parameters
+    + getinfo             network info
+    + getmasterprivate    Get master private key
+    + getmerkle           Get Merkle branch of a transaction included in a block
     getminacceptablegap Returns the minimum value for gap limit that would be sufficient to discover all known addresses in the wallet
-    getmpk              Get master public key
+    + getmpk              Get master public key
     getprivatekeyforpath Get private key corresponding to derivation path (address index)
-    getprivatekeys      Get private keys of addresses
-    getpubkeys          Return the public keys for a wallet address
+    + getprivatekeys      Get private keys of addresses
+    + getpubkeys          Return the public keys for a wallet address
     getrequest          Return a payment request
-    getseed             Get seed phrase
-    getservers          Return the list of known servers (candidates for connecting)
-    gettransaction      Retrieve a transaction
-    getunusedaddress    Returns the first unused address of the wallet, or None if all addresses are used
+    + getseed             Get seed phrase
+    + getservers          Return the list of known servers (candidates for connecting)
+    + gettransaction      Retrieve a transaction
+    + getunusedaddress    Returns the first unused address of the wallet, or None if all addresses are used
     help
     import_channel_backup
     importprivkey       Import a private key
-    // inject_fees
-    is_synchronized     return wallet synchronization status
-    ismine              Check if address is in wallet
+    inject_fees
+    + is_synchronized     return wallet synchronization status
+    + ismine              Check if address is in wallet
     lightning_history   lightning history
     list_channels
     list_invoices
     list_peers
     list_requests       List the payment requests you made
     list_wallets        List wallets open in daemon
-    listaddresses       List wallet addresses
+    + listaddresses       List wallet addresses
     listcontacts        Show your list of contacts
-    listunspent         List unspent outputs
-    // lnpay
-    load_wallet         Open wallet in daemon
-    make_seed           Create a seed
+    + listunspent         List unspent outputs
+    lnpay
+    + load_wallet         Open wallet in daemon
+    + make_seed           Create a seed
     nodeid
     normal_swap         Normal submarine swap: send on-chain BTC, receive on Lightning Note that your funds will be locked for 24h if you do not have enough incoming capacity
-    notify              Watch an address
-    onchain_history     Wallet onchain history
+    + notify              Watch an address
+    + onchain_history     Wallet onchain history
     open_channel
-    password            Change wallet password
-    payto               Create a transaction
-    paytomany           Create a multi-output transaction
+    + password            Change wallet password
+    + payto               Create a transaction
+    + paytomany           Create a multi-output transaction
     removelocaltx       Remove a 'local' transaction from the wallet, and its dependent transactions
     request_force_close Requests the remote to force close a channel
     reset_liquidity_hints
@@ -1259,17 +1256,17 @@ func (c *Client) Version() (version string, err error) {
     rmrequest           Remove a payment request
     searchcontacts      Search through contacts, return matching entries
     serialize           Create a transaction from json inputs
-    setconfig           Set a configuration variable
+    + setconfig           Set a configuration variable
     setlabel            Assign a label to an item
-    signmessage         Sign a message with a key
+    + signmessage         Sign a message with a key
     signrequest         Sign payment request with an OpenAlias
-    signtransaction     Sign a transaction
+    + signtransaction     Sign a transaction
     signtransaction_with_privkey	Sign a transaction
     stop                Stop daemon
     sweep               Sweep private keys
     unfreeze            Unfreeze address
     unfreeze_utxo       Unfreeze a UTXO so that the wallet might spend it
-    validateaddress     Check that an address is valid
-    verifymessage       Verify a signature
-    version             Return the version of Electrum
+    + validateaddress     Check that an address is valid
+    + verifymessage       Verify a signature
+    + version             Return the version of Electrum
 */
