@@ -55,6 +55,12 @@ type (
 		Version          string `json:"version"`
 	}
 
+	Create struct {
+		Msg  string `json:"msg"`
+		Path string `json:"path"`
+		Seed string `json:"seed"`
+	}
+
 	// Balance represents a response to getbalance, getaddressbalance.
 	Balance struct {
 		Unconfirmed float64 `json:"unconfirmed"`
@@ -413,6 +419,34 @@ func (c *Client) BumpFee(tx string, new_fee_rate float64) (result bool, err erro
 	}
 
 	r, err := c.request("bumpfee", params)
+	if err = c.error(err, &r); err != nil {
+		return
+	}
+
+	err = json.Unmarshal(r.Result, &result)
+	return
+}
+
+// Create a new wallet
+func (c *Client) Create(password, walletPath string, args ...string) (result Create, err error) {
+	params := map[string]interface{}{
+		"wallet": walletPath,
+	}
+
+	if password != "" {
+		params["password"] = password
+	}
+
+	for _, arg := range args {
+		if arg == "encrypt_file" {
+			params[arg] = true
+		}
+		if arg == "forgetconfig" {
+			params[arg] = true
+		}
+	}
+
+	r, err := c.request("create", params)
 	if err = c.error(err, &r); err != nil {
 		return
 	}
