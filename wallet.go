@@ -106,6 +106,11 @@ type (
 		Balance string
 	}
 
+	MultiSig struct {
+		Address      string `json:"address"`
+		RedeemScript string `json:"redeemScript"`
+	}
+
 	// FeeType defines a structure for getfeerate method.
 	FeeType struct {
 		// FeeMethod represents the estimation method to use: static, eta, mempool.
@@ -428,9 +433,9 @@ func (c *Client) BumpFee(tx string, new_fee_rate float64) (result bool, err erro
 }
 
 // Create a new wallet
-func (c *Client) Create(password, walletPath string, args ...string) (result Create, err error) {
+func (c *Client) Create(path, password string, args ...string) (result Create, err error) {
 	params := map[string]interface{}{
-		"wallet": walletPath,
+		"wallet": path,
 	}
 
 	if password != "" {
@@ -447,6 +452,25 @@ func (c *Client) Create(password, walletPath string, args ...string) (result Cre
 	}
 
 	r, err := c.request("create", params)
+	if err = c.error(err, &r); err != nil {
+		return
+	}
+
+	err = json.Unmarshal(r.Result, &result)
+	return
+}
+
+// LoadWallet loads a new wallet on daemon with specified password.
+func (c *Client) LoadWallet(path, password string) (result bool, err error) {
+	params := map[string]interface{}{
+		"wallet_path": path,
+	}
+
+	if password != "" {
+		params["password"] = password
+	}
+
+	r, err := c.request("load_wallet", params)
 	if err = c.error(err, &r); err != nil {
 		return
 	}
@@ -481,6 +505,22 @@ func (c *Client) CreateNewAddress(path string) (address string, err error) {
 	}
 
 	err = json.Unmarshal(r.Result, &address)
+	return
+}
+
+// Create multisig address
+func (c *Client) CreateMultiSig(num int, pabkeys []string) (result MultiSig, err error) {
+	params := map[string]interface{}{
+		"num":     num,
+		"pabkeys": pabkeys,
+	}
+
+	r, err := c.request("createmultisig", params)
+	if err = c.error(err, &r); err != nil {
+		return
+	}
+
+	err = json.Unmarshal(r.Result, &result)
 	return
 }
 
@@ -885,22 +925,6 @@ func (c *Client) ListUnspent() (addresses []Unspent, err error) {
 	}
 
 	err = json.Unmarshal(r.Result, &addresses)
-	return
-}
-
-// LoadWallet loads a new wallet on daemon with specified password.
-func (c *Client) LoadWallet(path, password string) (result bool, err error) {
-	params := map[string]interface{}{
-		"wallet_path": path,
-		"password":    password,
-	}
-
-	r, err := c.request("load_wallet", params)
-	if err = c.error(err, &r); err != nil {
-		return
-	}
-
-	err = json.Unmarshal(r.Result, &result)
 	return
 }
 
