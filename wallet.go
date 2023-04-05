@@ -1,4 +1,4 @@
-package electrum_rpc
+package wallet
 
 import (
 	"bytes"
@@ -55,12 +55,6 @@ type (
 		Version          string `json:"version"`
 	}
 
-	Create struct {
-		Msg  string `json:"msg"`
-		Path string `json:"path"`
-		Seed string `json:"seed"`
-	}
-
 	// Balance represents a response to getbalance, getaddressbalance.
 	Balance struct {
 		Unconfirmed float64 `json:"unconfirmed"`
@@ -104,11 +98,6 @@ type (
 		Address string
 		Label   string
 		Balance string
-	}
-
-	MultiSig struct {
-		Address      string `json:"address"`
-		RedeemScript string `json:"redeemScript"`
 	}
 
 	// FeeType defines a structure for getfeerate method.
@@ -169,20 +158,20 @@ type (
 
 	// OnchainHistoryTransaction defines a structure for onchain_history transactions method.
 	OnchainHistoryTransaction struct {
-		Balance            string                   `json:"bc_balance,omitempty"`
-		Value              string                   `json:"bc_value,omitempty"`
-		Confirmations      uint64                   `json:"confirmations,omitempty"`
-		Date               string                   `json:"date,omitempty"`
-		Fee                string                   `json:"fee,omitempty"`
-		FeeSat             uint64                   `json:"fee_sat,omitempty"`
-		Height             int64                    `json:"height,omitempty"`
-		Incoming           bool                     `json:"incoming,omitempty"`
-		Label              string                   `json:"label,omitempty"`
-		MonotonicTimestamp uint64                   `json:"monotonic_timestamp,omitempty"`
-		Timestamp          uint64                   `json:"timestamp,omitempty"`
-		TxID               string                   `json:"txid,omitempty"`
-		TxposInBlock       int                      `json:"txpos_in_block,omitempty"`
-		Outputs            []map[string]interface{} `json:"outputs,omitempty"` //[ map[address value], ... ]
+		Balance            string                   `json:"bc_balance"`
+		Value              string                   `json:"bc_value"`
+		Confirmations      uint64                   `json:"confirmations"`
+		Date               string                   `json:"date"`
+		Fee                string                   `json:"fee"`
+		FeeSat             uint64                   `json:"fee_sat"`
+		Height             int64                    `json:"height"`
+		Incoming           bool                     `json:"incoming"`
+		Label              string                   `json:"label"`
+		MonotonicTimestamp uint64                   `json:"monotonic_timestamp"`
+		Timestamp          uint64                   `json:"timestamp"`
+		TxID               string                   `json:"txid"`
+		TxposInBlock       int                      `json:"txpos_in_block"`
+		Outputs            []map[string]interface{} `json:"outputs"` // [ map[address]value, ... ]
 	}
 
 	// ------------------------------------------------------------------------------------------
@@ -432,53 +421,6 @@ func (c *Client) BumpFee(tx string, new_fee_rate float64) (result bool, err erro
 	return
 }
 
-// Create a new wallet
-func (c *Client) Create(path, password string, args ...string) (result Create, err error) {
-	params := map[string]interface{}{
-		"wallet": path,
-	}
-
-	if password != "" {
-		params["password"] = password
-	}
-
-	for _, arg := range args {
-		if arg == "encrypt_file" {
-			params[arg] = true
-		}
-		if arg == "forgetconfig" {
-			params[arg] = true
-		}
-	}
-
-	r, err := c.request("create", params)
-	if err = c.error(err, &r); err != nil {
-		return
-	}
-
-	err = json.Unmarshal(r.Result, &result)
-	return
-}
-
-// LoadWallet loads a new wallet on daemon with specified password.
-func (c *Client) LoadWallet(path, password string) (result bool, err error) {
-	params := map[string]interface{}{
-		"wallet_path": path,
-	}
-
-	if password != "" {
-		params["password"] = password
-	}
-
-	r, err := c.request("load_wallet", params)
-	if err = c.error(err, &r); err != nil {
-		return
-	}
-
-	err = json.Unmarshal(r.Result, &result)
-	return
-}
-
 // CloseWallet closes the current open wallet.
 func (c *Client) CloseWallet(path string) (result bool, err error) {
 	params := map[string]interface{}{
@@ -505,22 +447,6 @@ func (c *Client) CreateNewAddress(path string) (address string, err error) {
 	}
 
 	err = json.Unmarshal(r.Result, &address)
-	return
-}
-
-// Create multisig address
-func (c *Client) CreateMultiSig(num int, pabkeys []string) (result MultiSig, err error) {
-	params := map[string]interface{}{
-		"num":     num,
-		"pabkeys": pabkeys,
-	}
-
-	r, err := c.request("createmultisig", params)
-	if err = c.error(err, &r); err != nil {
-		return
-	}
-
-	err = json.Unmarshal(r.Result, &result)
 	return
 }
 
@@ -849,6 +775,21 @@ func (c *Client) IsMine(address string) (result bool, err error) {
 	return
 }
 
+// Remove a 'local' transaction from the wallet, and its dependent transactions
+func (c *Client) RemoveLocalTx(txId string) (result bool, err error) {
+	params := map[string]interface{}{
+		"txid": txId,
+	}
+
+	r, err := c.request("removelocaltx", params)
+	if err = c.error(err, &r); err != nil {
+		return
+	}
+
+	err = json.Unmarshal(r.Result, &result)
+	return
+}
+
 // ListAddresses returns a list of all addresses in your wallet. Use optional arguments to filter the results.
 //
 //	receiving       Show only receiving addresses
@@ -928,6 +869,22 @@ func (c *Client) ListUnspent() (addresses []Unspent, err error) {
 	return
 }
 
+// LoadWallet loads a new wallet on daemon with specified password.
+func (c *Client) LoadWallet(path, password string) (result bool, err error) {
+	params := map[string]interface{}{
+		"wallet_path": path,
+		"password":    password,
+	}
+
+	r, err := c.request("load_wallet", params)
+	if err = c.error(err, &r); err != nil {
+		return
+	}
+
+	err = json.Unmarshal(r.Result, &result)
+	return
+}
+
 // MakeSeed creates and returns a new seed.
 func (c *Client) MakeSeed() (seed string, err error) {
 	r, err := c.request("make_seed", nil)
@@ -976,10 +933,11 @@ func (c *Client) Password(password, newpassword string) (result bool, err error)
 }
 
 // PayTo creates a transaction.
-func (c *Client) PayTo(destination, amount string, p PayToN, args ...string) (result string, err error) {
+func (c *Client) PayTo(destination, amount, path string, p PayToN, args ...string) (result string, err error) {
 	params := map[string]interface{}{
 		"destination": destination,
 		"amount":      amount,
+		"wallet":      path,
 	}
 	if c.walletPassword != "" {
 		params["password"] = c.walletPassword
@@ -1025,9 +983,10 @@ func (c *Client) PayTo(destination, amount string, p PayToN, args ...string) (re
 }
 
 // PayToMany Create a multi-output transaction [["address", amount], ...]
-func (c *Client) PayToMany(outputs [][]interface{}, p PayToN, args ...string) (result string, err error) {
+func (c *Client) PayToMany(outputs [][]interface{}, path string, p PayToN, args ...string) (result string, err error) {
 	params := map[string]interface{}{
 		"outputs": outputs,
+		"wallet":  path,
 	}
 	if c.walletPassword != "" {
 		params["password"] = c.walletPassword
@@ -1169,27 +1128,32 @@ func (c *Client) Version() (version string, err error) {
 	return
 }
 
+// https://github.com/konez2k/go-electrum
+
 /*
+<command>
+    gui                 Run GUI (default)
+    daemon              Run Daemon
     add_lightning_request
     add_peer
     add_request         Create a payment request, using the first unused address of the wallet
-    + addtransaction      Add a transaction to the wallet history
-    + broadcast           Broadcast a transaction to the network
-	+ bumpfee				Bump the Fee for an unconfirmed Transaction
+    addtransaction      Add a transaction to the wallet history
+    broadcast           Broadcast a transaction to the network
+	bumpfee				Bump the Fee for an unconfirmed Transaction
     changegaplimit      Change the gap limit of the wallet
     clear_invoices      Remove all invoices
     clear_ln_blacklist
     clear_requests      Remove all payment requests
     close_channel
-    + close_wallet        Close wallet
+    close_wallet        Close wallet
     commands            List of commands
     convert_xkey        Convert xtype of a master key
-    + create              Create a new wallet
-    + createmultisig      Create multisig address
-    + createnewaddress    Create a new receiving address, beyond the gap limit of the wallet
+    create              Create a new wallet
+    createmultisig      Create multisig address
+    createnewaddress    Create a new receiving address, beyond the gap limit of the wallet
     decode_invoice
     decrypt             Decrypt a message encrypted with a public key
-    + deserialize         Deserialize a serialized transaction
+    deserialize         Deserialize a serialized transaction
     dumpgraph
     dumpprivkeys        Deprecated
     enable_htlc_settle
@@ -1202,52 +1166,52 @@ func (c *Client) Version() (version string, err error) {
     get_ssl_domain      Check and return the SSL domain set in ssl_keyfile and ssl_certfile
     get_tx_status       Returns some information regarding the tx
     get_watchtower_ctn  return the local watchtower's ctn of channel
-    + getaddressbalance   Return the balance of any address
-    + getaddresshistory   Return the transaction history of any address
-    + getaddressunspent   Returns the UTXO list of any address
+    getaddressbalance   Return the balance of any address
+    getaddresshistory   Return the transaction history of any address
+    getaddressunspent   Returns the UTXO list of any address
     getalias            Retrieve alias
-    + getbalance          Return the balance of your wallet
-    + getconfig           Return a configuration variable
-    + getfeerate          Return current suggested fee rate (in sat/kvByte), according to config settings or supplied parameters
-    + getinfo             network info
-    + getmasterprivate    Get master private key
-    + getmerkle           Get Merkle branch of a transaction included in a block
+    getbalance          Return the balance of your wallet
+    getconfig           Return a configuration variable
+    getfeerate          Return current suggested fee rate (in sat/kvByte), according to config settings or supplied parameters
+    getinfo             network info
+    getmasterprivate    Get master private key
+    getmerkle           Get Merkle branch of a transaction included in a block
     getminacceptablegap Returns the minimum value for gap limit that would be sufficient to discover all known addresses in the wallet
-    + getmpk              Get master public key
+    getmpk              Get master public key
     getprivatekeyforpath Get private key corresponding to derivation path (address index)
-    + getprivatekeys      Get private keys of addresses
-    + getpubkeys          Return the public keys for a wallet address
+    getprivatekeys      Get private keys of addresses
+    getpubkeys          Return the public keys for a wallet address
     getrequest          Return a payment request
-    + getseed             Get seed phrase
-    + getservers          Return the list of known servers (candidates for connecting)
-    + gettransaction      Retrieve a transaction
-    + getunusedaddress    Returns the first unused address of the wallet, or None if all addresses are used
+    getseed             Get seed phrase
+    getservers          Return the list of known servers (candidates for connecting)
+    gettransaction      Retrieve a transaction
+    getunusedaddress    Returns the first unused address of the wallet, or None if all addresses are used
     help
     import_channel_backup
     importprivkey       Import a private key
-    inject_fees
-    + is_synchronized     return wallet synchronization status
-    + ismine              Check if address is in wallet
+    // inject_fees
+    is_synchronized     return wallet synchronization status
+    ismine              Check if address is in wallet
     lightning_history   lightning history
     list_channels
     list_invoices
     list_peers
     list_requests       List the payment requests you made
     list_wallets        List wallets open in daemon
-    + listaddresses       List wallet addresses
+    listaddresses       List wallet addresses
     listcontacts        Show your list of contacts
-    + listunspent         List unspent outputs
-    lnpay
-    + load_wallet         Open wallet in daemon
-    + make_seed           Create a seed
+    listunspent         List unspent outputs
+    // lnpay
+    load_wallet         Open wallet in daemon
+    make_seed           Create a seed
     nodeid
     normal_swap         Normal submarine swap: send on-chain BTC, receive on Lightning Note that your funds will be locked for 24h if you do not have enough incoming capacity
-    + notify              Watch an address
-    + onchain_history     Wallet onchain history
+    notify              Watch an address
+    onchain_history     Wallet onchain history
     open_channel
-    + password            Change wallet password
-    + payto               Create a transaction
-    + paytomany           Create a multi-output transaction
+    password            Change wallet password
+    payto               Create a transaction
+    paytomany           Create a multi-output transaction
     removelocaltx       Remove a 'local' transaction from the wallet, and its dependent transactions
     request_force_close Requests the remote to force close a channel
     reset_liquidity_hints
@@ -1256,17 +1220,17 @@ func (c *Client) Version() (version string, err error) {
     rmrequest           Remove a payment request
     searchcontacts      Search through contacts, return matching entries
     serialize           Create a transaction from json inputs
-    + setconfig           Set a configuration variable
+    setconfig           Set a configuration variable
     setlabel            Assign a label to an item
-    + signmessage         Sign a message with a key
+    signmessage         Sign a message with a key
     signrequest         Sign payment request with an OpenAlias
-    + signtransaction     Sign a transaction
+    signtransaction     Sign a transaction
     signtransaction_with_privkey	Sign a transaction
     stop                Stop daemon
     sweep               Sweep private keys
     unfreeze            Unfreeze address
     unfreeze_utxo       Unfreeze a UTXO so that the wallet might spend it
-    + validateaddress     Check that an address is valid
-    + verifymessage       Verify a signature
-    + version             Return the version of Electrum
+    validateaddress     Check that an address is valid
+    verifymessage       Verify a signature
+    version             Return the version of Electrum
 */
