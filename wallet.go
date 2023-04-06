@@ -735,9 +735,6 @@ func (c *Client) GetUnusedAddress() (address string, err error) {
 func (c *Client) OnchainHistory(args ...string) (history OnchainHistory, err error) {
 	params := map[string]interface{}{}
 
-	if c.walletPassword != "" {
-		params["password"] = c.walletPassword
-	}
 	if c.walletPath != "" {
 		params["wallet"] = c.walletPath
 	}
