@@ -732,9 +732,14 @@ func (c *Client) GetUnusedAddress() (address string, err error) {
 }
 
 // Onchain History returns the transaction history of your wallet.
-func (c *Client) OnchainHistory(walletPath string, args ...string) (history OnchainHistory, err error) {
-	params := map[string]interface{}{
-		"wallet": walletPath,
+func (c *Client) OnchainHistory(args ...string) (history OnchainHistory, err error) {
+	params := map[string]interface{}{}
+
+	if c.walletPassword != "" {
+		params["password"] = c.walletPassword
+	}
+	if c.walletPath != "" {
+		params["wallet"] = c.walletPath
 	}
 
 	for _, arg := range args {
@@ -792,22 +797,31 @@ func (c *Client) RemoveLocalTx(txId string) (result bool, err error) {
 	return
 }
 
-// ListAddresses returns a list of all addresses in your wallet. Use optional arguments to filter the results.
-//
-//	receiving       Show only receiving addresses
-//	change          Show only change addresses
-//	frozen          Show only frozen addresses
-//	unused          Show only unused addresses
-//	funded          Show only funded addresses
-//	labels          Show the labels of listed addresses
-//	balance         Show the balances of listed addresses
+/*
+	 ListAddresses returns a list of all addresses in your wallet. Use optional arguments to filter the results.
+
+		receiving       Show only receiving addresses
+		change          Show only change addresses
+		frozen          Show only frozen addresses
+		unused          Show only unused addresses
+		funded          Show only funded addresses
+		labels          Show the labels of listed addresses
+		balance         Show the balances of listed addresses
+*/
 func (c *Client) ListAddresses(args ...string) (addresses []Address, err error) {
-	params := make(map[string]bool, 0)
+	params := map[string]interface{}{}
+
+	if c.walletPassword != "" {
+		params["password"] = c.walletPassword
+	}
+	if c.walletPath != "" {
+		params["wallet"] = c.walletPath
+	}
+
 	var showLabels bool
 	var showBalance bool
 
-	// if showLabels || showBalance we expect an array of arrays,
-	// otherwise the returned value is an array of strings.
+	// if showLabels || showBalance we expect an array of arrays, otherwise the returned value is an array of strings.
 	for _, arg := range args {
 		if arg == "labels" {
 			showLabels = true
