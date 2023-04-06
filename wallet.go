@@ -517,10 +517,10 @@ func (c *Client) GetAddressUnspent(address string) (utxo []UTXO, err error) {
 	return
 }
 
-// GetBalance returns the balance of your wallet. TODO: test
-func (c *Client) GetBalance(walletPath string) (balance Balance, err error) {
+// GetBalance returns the balance of your wallet.
+func (c *Client) GetBalance() (balance Balance, err error) {
 	params := map[string]interface{}{
-		"wallet": walletPath,
+		"wallet": c.walletPath,
 	}
 
 	r, err := c.request("getbalance", params)
