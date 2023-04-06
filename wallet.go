@@ -20,6 +20,7 @@ type (
 		username       string
 		password       string
 		walletPassword string
+		walletPath     string
 		httpClient     *http.Client
 		Debug          bool
 	}
@@ -237,7 +238,7 @@ func (o *DeserializedOutput) GetValue() float64 {
 }
 
 // New return a new JSON-RPC client.
-func New(host string, port int, username, password string, useSSL bool) (*Client, error) {
+func New(host string, port int, username, password, path string, useSSL bool) (*Client, error) {
 	if host == "" {
 		return nil, fmt.Errorf("missing host")
 	}
@@ -266,6 +267,7 @@ func New(host string, port int, username, password string, useSSL bool) (*Client
 		address:    fmt.Sprintf("%s%s:%d", protocol, host, port),
 		username:   username,
 		password:   password,
+		walletPath: path,
 		httpClient: httpClient,
 	}, nil
 }
@@ -933,14 +935,17 @@ func (c *Client) Password(password, newpassword string) (result bool, err error)
 }
 
 // PayTo creates a transaction.
-func (c *Client) PayTo(destination, amount, path string, p PayToN, args ...string) (result string, err error) {
+func (c *Client) PayTo(destination, amount string, p PayToN, args ...string) (result string, err error) {
 	params := map[string]interface{}{
 		"destination": destination,
 		"amount":      amount,
-		"wallet":      path,
 	}
 	if c.walletPassword != "" {
 		params["password"] = c.walletPassword
+	}
+
+	if c.walletPath != "" {
+		params["wallet"] = c.walletPath
 	}
 
 	if p.FeeRate > 0 {
@@ -983,13 +988,16 @@ func (c *Client) PayTo(destination, amount, path string, p PayToN, args ...strin
 }
 
 // PayToMany Create a multi-output transaction [["address", amount], ...]
-func (c *Client) PayToMany(outputs [][]interface{}, path string, p PayToN, args ...string) (result string, err error) {
+func (c *Client) PayToMany(outputs [][]interface{}, p PayToN, args ...string) (result string, err error) {
 	params := map[string]interface{}{
 		"outputs": outputs,
-		"wallet":  path,
 	}
 	if c.walletPassword != "" {
 		params["password"] = c.walletPassword
+	}
+
+	if c.walletPath != "" {
+		params["wallet"] = c.walletPath
 	}
 
 	if p.FeeRate > 0 {
@@ -1045,6 +1053,11 @@ func (c *Client) SetConfig(key string, value interface{}) (result bool, err erro
 // SetWalletPassword sets the password used on password required JSON-RPC calls.
 func (c *Client) SetWalletPassword(password string) {
 	c.walletPassword = password
+}
+
+// SetWalletpath sets the path to wallet.
+func (c *Client) SetWalletpath(path string) {
+	c.walletPath = path
 }
 
 // SignMessage signs a message with a key.
