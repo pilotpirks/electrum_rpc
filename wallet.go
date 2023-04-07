@@ -885,8 +885,8 @@ func (c *Client) ListUnspent() (addresses []Unspent, err error) {
 // LoadWallet loads a new wallet on daemon with specified password.
 func (c *Client) LoadWallet(path, password string) (result bool, err error) {
 	params := map[string]interface{}{
-		"wallet_path": path,
-		"password":    password,
+		"wallet":   path,
+		"password": password,
 	}
 
 	r, err := c.request("load_wallet", params)
